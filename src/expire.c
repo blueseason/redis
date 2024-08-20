@@ -183,7 +183,7 @@ static inline void activeExpireHashFieldCycle(int type) {
         currentDb = (currentDb + 1) % server.dbnum;
     }
 }
-
+//惰性删除策略
 void activeExpireCycle(int type) {
     /* Adjust the running parameters according to the configured expire
      * effort. The default effort is 1, and the maximum configurable effort

@@ -47,7 +47,7 @@
 typedef struct quicklistNode {
     struct quicklistNode *prev;
     struct quicklistNode *next;
-    unsigned char *entry;
+    unsigned char *entry; // 执行qicklistentry, 新版实现已经改为listpack
     size_t sz;             /* entry size in bytes */
     unsigned int count : 16;     /* count of items in listpack */
     unsigned int encoding : 2;   /* RAW==1 or LZF==2 */
@@ -104,6 +104,15 @@ typedef struct quicklistBookmark {
  * 'fill' is the user-requested (or default) fill factor.
  * 'bookmarks are an optional feature that is used by realloc this struct,
  *      so that they don't consume memory when not used. */
+
+/*
+ * fill用来指明每个quicklistNode中ziplist长度，当fill为正数时，表明每个ziplist最多含有的数据项数，当fill为负数时，如下：
+    Length -1: 4k，即ziplist节点最大为4KB
+    Length -2: 8k，即ziplist节点最大为8KB
+    Length -3: 16k ...
+    Length -4: 32k
+   Length -5: 64k
+ */
 typedef struct quicklist {
     quicklistNode *head;
     quicklistNode *tail;
@@ -126,7 +135,7 @@ typedef struct quicklistIter {
 typedef struct quicklistEntry {
     const quicklist *quicklist;
     quicklistNode *node;
-    unsigned char *zi;
+    unsigned char *zi;  // point to cunrrent listpack
     unsigned char *value;
     long long longval;
     size_t sz;

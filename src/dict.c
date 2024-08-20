@@ -234,7 +234,7 @@ int _dictResize(dict *d, unsigned long size, int* malloc_failed)
     signed char new_ht_size_exp = _dictNextExp(size);
 
     /* Detect overflows */
-    size_t newsize = DICTHT_SIZE(new_ht_size_exp);
+    size_t newsize = DICTHT_SIZE(new_ht_size_exp); // 2 ** new_ht_size_exp
     if (newsize < size || newsize * sizeof(dictEntry*) < newsize)
         return DICT_ERR;
 
@@ -309,6 +309,7 @@ int dictShrink(dict *d, unsigned long size) {
 
 /* Helper function for `dictRehash` and `dictBucketRehash` which rehashes all the keys
  * in a bucket at index `idx` from the old to the new hash HT. */
+// 从 ht[0] -> ht[1]
 static void rehashEntriesInBucketAtIndex(dict *d, uint64_t idx) {
     dictEntry *de = d->ht_table[0][idx];
     uint64_t h;
@@ -382,6 +383,11 @@ static int dictCheckRehashingCompleted(dict *d) {
  * guaranteed that this function will rehash even a single bucket, since it
  * will visit at max N*10 empty buckets in total, otherwise the amount of
  * work it does would be unbound and the function may block for a long time. */
+
+/*
+  渐进式hash， 每次rehash一个index 或者 遇到10个空的index
+  在查找，插入和删除时进行
+ */
 int dictRehash(dict *d, int n) {
     int empty_visits = n*10; /* Max number of empty buckets to visit. */
     unsigned long s0 = DICTHT_SIZE(d->ht_size_exp[0]);
@@ -1489,9 +1495,16 @@ static int dictTypeResizeAllowed(dict *d, size_t size) {
 /* Returning DICT_OK indicates a successful expand or the dictionary is undergoing rehashing, 
  * and there is nothing else we need to do about this dictionary currently. While DICT_ERR indicates
  * that expand has not been triggered (may be try shrinking?)*/
+//插入元素时判断是否进行扩容
+/*
+    扩容条件
+  1. empty hash table
+  2. 允许扩容时hashtable 装载因子大于等于1
+  3. 不允许扩容时装载因子大于等于dict_force_resize_ratio倍 hashtablesize
+ */
 int dictExpandIfNeeded(dict *d) {
     /* Incremental rehashing already in progress. Return. */
-    if (dictIsRehashing(d)) return DICT_OK;
+    if (dictIsRehashing(d)) return DICT_OK;  // 判断rehashidx !=-1
 
     /* If the hash table is empty expand it to the initial size. */
     if (DICTHT_SIZE(d->ht_size_exp[0]) == 0) {

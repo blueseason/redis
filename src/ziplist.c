@@ -52,6 +52,10 @@
  *
  * <prevlen> <encoding>
  *
+ *
+ * 连锁更新的原因 prevlen的长度大于254时需要5个字节，在一个253字节以内的数组中插入这样一个元素
+ * 可能会导致后续多个元素的prevlen长度变化进行更新
+ *
  * The length of the previous entry, <prevlen>, is encoded in the following way:
  * If this length is smaller than 254 bytes, it will only consume a single
  * byte representing the length as an unsigned 8 bit integer. When the length

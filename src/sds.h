@@ -17,7 +17,15 @@ extern const char *SDS_NOINIT;
 #include <stdarg.h>
 #include <stdint.h>
 
-typedef char *sds;
+typedef char *sds; // sds是一个char*， 为什么不是void* ?, 和buf的类型一致，后续取flag  用buf[-1]
+/*  __attribute__ 是GCC的一种编译机制，用于更好的控制代码生成
+ * https://www.gnu.org/software/c-intro-and-ref/manual/html_node/Attributes.html
+  如下面的__packed__ 告诉编译器结构体按照紧凑方式进行字节对齐， field之间没有gap
+  *** 为什么使用 __packed__ 紧凑内存布局
+  - 节省内存
+  - c 语言的处理方式，通过 buf[-1]获取type，无需兼任不同长度的类型
+  - 结构体声明顺序合理，已经自对齐，区别只在于位数填充
+ */
 
 /* Note: sdshdr5 is never used, we just access the flags byte directly.
  * However is here to document the layout of type 5 SDS strings. */
@@ -62,12 +70,12 @@ struct __attribute__ ((__packed__)) sdshdr64 {
 #define SDS_TYPE_5_LEN(f) ((f)>>SDS_TYPE_BITS)
 
 static inline size_t sdslen(const sds s) {
-    unsigned char flags = s[-1];
+    unsigned char flags = s[-1]; // buf[-1] 取flag
     switch(flags&SDS_TYPE_MASK) {
         case SDS_TYPE_5:
             return SDS_TYPE_5_LEN(flags);
         case SDS_TYPE_8:
-            return SDS_HDR(8,s)->len;
+            return SDS_HDR(8,s)->len; //宏展开后实际为显式类型转化，char - len得到头部地址
         case SDS_TYPE_16:
             return SDS_HDR(16,s)->len;
         case SDS_TYPE_32:

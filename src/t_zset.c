@@ -134,6 +134,13 @@ int zslRandomLevel(void) {
 /* Insert a new node in the skiplist. Assumes the element does not already
  * exist (up to the caller to enforce that). The skiplist takes ownership
  * of the passed SDS string 'ele'. */
+/*
+  1. 从最高level开始查找，比较score > 当前节点，x = forward 节点
+  2. score <=  当前节点时，更新当前level
+  3. 循环处理下一层level
+  4. 随即生成当前节点的level
+  5. 创建节点并更新每一层信息，update 为前节点指针
+ */
 zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
     zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
     unsigned long rank[ZSKIPLIST_MAXLEVEL];
@@ -221,6 +228,8 @@ void zslDeleteNode(zskiplist *zsl, zskiplistNode *x, zskiplistNode **update) {
  * it is not freed (but just unlinked) and *node is set to the node pointer,
  * so that it is possible for the caller to reuse the node (including the
  * referenced SDS string at node->ele). */
+
+// update 为前节点， x为删除节点的后节点
 int zslDelete(zskiplist *zsl, double score, sds ele, zskiplistNode **node) {
     zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
     int i;

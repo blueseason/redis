@@ -99,6 +99,7 @@ struct dict {
     dictEntry **ht_table[2];
     unsigned long ht_used[2];
 
+    //rehash过程中存储的是ht[0]下一次待迁移的buckets的位置
     long rehashidx; /* rehashing not in progress if rehashidx == -1 */
 
     /* Keep small vars at end for optimal (minimal) struct padding */
@@ -107,6 +108,7 @@ struct dict {
     unsigned useStoredKeyApi : 1; /* See comment of storedHashFunction above */
     signed char ht_size_exp[2]; /* exponent of size. (size = 1<<exp) */
     int16_t pauseAutoResize;  /* If >0 automatic resizing is disallowed (<0 indicates coding error) */
+    //user定义的metadata
     void *metadata[];
 };
 

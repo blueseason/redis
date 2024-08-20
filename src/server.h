@@ -875,7 +875,8 @@ struct RedisModuleDigest {
 
 /* Macro to check if the client is in the middle of module based authentication. */
 #define clientHasModuleAuthInProgress(c) ((c)->module_auth_ctx != NULL)
-
+ 
+// redis 对象的内部实现方式
 /* Objects encoding. Some kind of objects like Strings and Hashes can be
  * internally represented in multiple ways. The 'encoding' field of the object
  * is set to one of this fields for this object. */
@@ -900,6 +901,8 @@ struct RedisModuleDigest {
 #define OBJ_SHARED_REFCOUNT INT_MAX     /* Global object never destroyed. */
 #define OBJ_STATIC_REFCOUNT (INT_MAX-1) /* Object allocated in the stack. */
 #define OBJ_FIRST_SPECIAL_REFCOUNT OBJ_STATIC_REFCOUNT
+
+// redis object  定义
 struct redisObject {
     unsigned type:4;
     unsigned encoding:4;
@@ -965,6 +968,7 @@ typedef struct replBufBlock {
 /* Redis database representation. There are multiple databases identified
  * by integers from 0 (the default database) up to the max configured
  * database. The database number is the 'id' field in the structure. */
+// 原先用 dict类型 表示key的空间
 typedef struct redisDb {
     kvstore *keys;              /* The keyspace for this DB */
     kvstore *expires;           /* Timeout of keys with a timeout set */
@@ -1154,6 +1158,7 @@ typedef struct {
 } clientReqResInfo;
 #endif
 
+// redis  client
 typedef struct client {
     uint64_t id;            /* Client incremental unique ID. */
     uint64_t flags;         /* Client flags: CLIENT_* macros. */
@@ -1338,13 +1343,14 @@ struct sharedObjectsStruct {
 };
 
 /* ZSETs use a specialized version of Skiplists */
+// skipNode 定义在server.h 和 t_zset.c
 typedef struct zskiplistNode {
     sds ele;
     double score;
     struct zskiplistNode *backward;
     struct zskiplistLevel {
         struct zskiplistNode *forward;
-        unsigned long span;
+        unsigned long span; //两个节点之间的距离
     } level[];
 } zskiplistNode;
 

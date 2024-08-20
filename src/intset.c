@@ -156,6 +156,10 @@ static uint8_t intsetSearch(intset *is, int64_t value, uint32_t *pos) {
 }
 
 /* Upgrades the intset to a larger encoding and inserts the given integer. */
+
+/* 新数据类型比原数据类型长时，进行grade
+   底层数据都是int8类型的，升级新数据类型时位置放对
+ */
 static intset *intsetUpgradeAndAdd(intset *is, int64_t value) {
     uint8_t curenc = intrev32ifbe(is->encoding);
     uint8_t newenc = _intsetValueEncoding(value);

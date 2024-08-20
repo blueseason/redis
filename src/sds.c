@@ -222,6 +222,14 @@ sds _sdsMakeRoomFor(sds s, size_t addlen, int greedy) {
     int hdrlen;
     size_t usable;
 
+    /* 内存预分配策略
+       1.剩余空间足够之间返回
+       2.greedy参数为0，分配正好的大小
+       3.greedy为1
+         小于1M，分配2倍大小
+         大于1M, 多分配1M
+     */
+
     /* Return ASAP if there is enough space left. */
     if (avail >= addlen) return s;
 
@@ -297,6 +305,8 @@ sds sdsRemoveFreeSpace(sds s, int would_regrow) {
  * The sdsAlloc size will be set to the requested size regardless of the actual
  * allocation size, this is done in order to avoid repeated calls to this
  * function when the caller detects that it has excess space. */
+
+// 空间足够时 trunc 多余部分
 sds sdsResize(sds s, size_t size, int would_regrow) {
     void *sh, *newsh;
     char type, oldtype = s[-1] & SDS_TYPE_MASK;
